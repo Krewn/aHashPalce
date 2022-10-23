@@ -78,7 +78,6 @@ class board:
         self.img = Image.new(mode="RGB", size=(board.size, board.size))
         for x in range(board.size):
             row = []
-            print(f"loading tomatos: {round(100*x*board.size/board.size**2)}%",end="    \r")
             for y in range(board.size):
                 row.append(spot(f'x={x}&y={y}&color=tomato'))
                 self.img.putpixel((x,y), processColor('tomato'))
