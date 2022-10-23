@@ -1,6 +1,6 @@
 import hashlib
 from urllib import parse
-import Image 
+from PIL import Image 
 import webcolors
 import os
 
