@@ -2,6 +2,7 @@ import hashlib
 from urllib import parse
 from PIL import Image 
 import webcolors
+import os
 
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
@@ -174,6 +175,6 @@ if __name__ == '__main__':
         config.add_route('png', '/home.png')
         config.scan('__main__')
         app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', 6450, app)
+    server = make_server('0.0.0.0', int(os.environ['PORT']), app)
     server.serve_forever()
 
