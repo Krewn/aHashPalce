@@ -28,7 +28,7 @@ class spot:
         self.color = self.attrs['color']
         self.hash = hashlib.sha256(self.query_string.encode()).hexdigest()
     def info(self):
-        return f"<div id = query_string>{self.query_string}</div><div id = hash>{self.hash}</div>"
+        return f"<div id = 'query_string'>{self.query_string}</div><div id = 'hash'>{self.hash}</div>"
     def pageView(self):
         title = defaultAccess(self,"title")
         text = defaultAccess(self,"text")
@@ -44,22 +44,22 @@ class spot:
        }
 </style>"""
         bar = f"<div style = 'background-color:{self.color}'><br></div>"
-        img = f"<img id = image src='data:image/png;base64,{image}' />"
+        img = f"<img id='image' src='data:image/png;base64,{image}' />"
         return f"""
 {style}{bar}
 <ul>
-    <li><h2 id = title>{title}</h2></li>
+    <li><h2 id = 'title'>{title}</h2></li>
     <li style = 'float: right;'><br> {img if len(image) else ""} </li>
 </ul>
 <ul>
-    <li><h5>x:</h5></li><li><h5 id = x>{self.x}</h5></li>
-    <li><h5>y:</h5></li><li><h5 id = y>{self.y}</h5></li>
-    <li><h5>color:</h5></li><li><h5 id = color>{self.color}</h5></li>
+    <li><h5>x:</h5></li><li><h5 id = 'x'>{self.x}</h5></li>
+    <li><h5>y:</h5></li><li><h5 id = 'y'>{self.y}</h5></li>
+    <li><h5>color:</h5></li><li><h5 id = 'color'>{self.color}</h5></li>
 </ul>
 <div>
-    <p id = text>{text}</p>
+    <p id = 'text'>{text}</p>
 </div><br>
-{f"<div><a id = link href = {href}>{href}</a></div><br>" if len(href) else ""}
+{f"<div><a id = 'link' href = {href}>{href}</a></div><br>" if len(href) else ""}
 {bar}<br>
 {self.info()}"""
 
