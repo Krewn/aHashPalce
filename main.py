@@ -10,6 +10,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.response import FileResponse
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPFound
 
 def defaultAccess(spot,key,default=""):
     try:
@@ -169,7 +170,8 @@ def over_view(request):
                 if processColor(data['color']):
                     place.data[x][y] = spot(request.query_string)
                     place.updateSpot(x,y)
-            return Response(content_type="text/html",body=f"""<script>window.location.href = './?{place.data[x][y].query_string}';</script>""")
+            return HTTPFound(location=f'./?{place.data[x][y].query_string}')
+            #return Response(content_type="text/html",body=f"""<script>window.location.href = './?{place.data[x][y].query_string}';</script>""")
     return Response(content_type="text/html",body=place.pixelView())
 
 if __name__ == '__main__':
