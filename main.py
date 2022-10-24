@@ -27,10 +27,8 @@ class spot:
         self.y = self.attrs['y']
         self.color = self.attrs['color']
         self.hash = hashlib.sha256(self.query_string.encode()).hexdigest()
-    def pix(self):
-        return f'<li title="{self.query_string} \n {self.hash}" style="background: {self.color}"><a href=./?x={self.x}&y={self.y}>.</a></li>'
     def info(self):
-        return f"<div><div>{self.query_string}</div><div>{self.hash}</div></div>"
+        return f"<div id = query_string>{self.query_string}</div><div id = hash>{self.hash}</div>"
     def pageView(self):
         title = defaultAccess(self,"title")
         text = defaultAccess(self,"text")
@@ -56,6 +54,7 @@ class spot:
 <ul>
     <li><h5>x:</h5></li><li><h5 id = x>{self.x}</h5></li>
     <li><h5>y:</h5></li><li><h5 id = y>{self.y}</h5></li>
+    <li><h5>color:</h5></li><li><h5 id = color>{self.color}</h5></li>
 </ul>
 <div>
     <p id = text>{text}</p>
