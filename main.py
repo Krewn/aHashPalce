@@ -1,7 +1,7 @@
 import hashlib
 from urllib import parse
-from PIL import Image 
 import webcolors
+from PIL import Image
 import os
 
 from wsgiref.simple_server import make_server
@@ -52,8 +52,12 @@ class spot:
     <li><h2 id = title>{title}</h2></li>
     <li style = 'float: right;'><br> {img if len(image) else ""} </li>
 </ul>
+<ul>
+    <li><h5>x:</h5></li><li><h5 id = x>{self.x}</h5></li>
+    <li><h5>y:</h5></li><li><h5 id = y>{self.y}</h5></li>
+</ul>
 <div>
-    <a id = text>{text}</a>
+    <p id = text>{text}</p>
 </div><br>
 {f"<div><a id = link href = {href}>{href}</a></div><br>" if len(href) else ""}
 {bar}<br>
@@ -71,7 +75,7 @@ def processColor(c):
 
 
 class board:
-    size = 1000
+    size = 421
     styles = ""
     canvasStuff = ""
     def __init__(self):
@@ -175,6 +179,10 @@ if __name__ == '__main__':
         config.add_route('png', '/home.png')
         config.scan('__main__')
         app = config.make_wsgi_app()
-    server = make_server('0.0.0.0', int(os.environ['PORT']), app)
+    try:
+        port = int(os.environ['PORT'])
+    except KeyError:
+        port = 6450
+    server = make_server('0.0.0.0', port , app)
     server.serve_forever()
 

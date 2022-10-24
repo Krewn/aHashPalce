@@ -1,0 +1,3 @@
+webcolors==1.12
+Pillow==9.2.0
+pyramid==2.0
