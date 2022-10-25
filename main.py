@@ -174,16 +174,17 @@ class board:
 
 
 @view_config(route_name='png')
-def test_page(request):
+def serve_png(request):
     response = FileResponse(
         './home.png',
         request=request,
         content_type='image/png'
         )
     return response
-    
+
+
 @view_config(route_name='json')
-def test_page(request):
+def serve_json(request):
     response = FileResponse(
         './data.json',
         request=request,
