@@ -12,6 +12,9 @@ from pyramid.response import FileResponse
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 
+import time
+import json
+
 def defaultAccess(spot,key,default=""):
     try:
         value = spot.attrs[key]
@@ -81,14 +84,32 @@ class board:
     def __init__(self):
         self.data = []
         self.img = Image.new(mode="RGB", size=(board.size, board.size))
-        for x in range(board.size):
-            row = []
-            for y in range(board.size):
-                row.append(spot(f'x={x}&y={y}&color=tomato'))
-                self.img.putpixel((x,y), processColor('tomato'))
-            self.data.append(row)
-        self.saveImg()
+        try:
+            with open("data.json","r") as f:
+                self.data = [[spot(q) for q in row] for row in json.load(f)]
+            for x in range(board.size):
+                for y in range(board.size):
+                    self.img.putpixel((x,y), processColor(self.data[x][y].color))
+        except (FileNotFoundError, json.decoder.JSONDecodeError):                
+            for x in range(board.size):
+                row = []
+                for y in range(board.size):
+                    row.append(spot(f'x={x}&y={y}&color=tomato'))
+                    self.img.putpixel((x,y), processColor('tomato'))
+                self.data.append(row)
+        self.lastSave = time.time()
+        self.deltaCount = 0
+        self.upkeep(force=True)
         self.templates()
+    def upkeep(self,force=False):
+        if force or (self.deltaCount >= 420 or (time.time()-self.lastSave > 69 and self.deltaCount)):
+            self.saveImg()
+            self.saveJson()
+            self.lastSave = time.time()
+            self.deltaCount = 0
+    def saveJson(self):
+        with open("data.json","w") as f:
+            json.dump([[q.query_string for q in row] for row in self.data],f)
     def templates(self):
         board.styles = """
 <style>
@@ -100,8 +121,8 @@ class board:
 <canvas id = canvas></canvas>
 
 <script>
-    var canvas = document.getElementById("canvas"),
-        ctx = canvas.getContext("2d");
+    var canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
 
     canvas.width = """+str(board.size)+""";
     canvas.height = """+str(board.size)+""";
@@ -112,6 +133,13 @@ class board:
     background.onload = function(){
         ctx.drawImage(background,0,0);   
     }
+    
+    setInterval(() => {
+        var background = new Image();
+        background.src = "home.png?roll="+new Date().getTime();
+        document.getElementById("canvas").canvas.getContext("2d").drawImage(background,0,0);
+        console.log("Check 1,2");
+    }, 1000*15);
     
     canvas.addEventListener('click', function(e) {
         var x;
@@ -138,8 +166,10 @@ class board:
     def updateSpot(self,x,y):
         c = processColor(self.data[x][y].attrs['color'])
         self.img.putpixel((x,y), processColor(self.data[x][y].color))
-        self.saveImg()
+        self.deltaCount+=1
+        self.upkeep()
     def pixelView(self):
+        self.upkeep()
         return board.styles + board.canvasStuff
 
 
