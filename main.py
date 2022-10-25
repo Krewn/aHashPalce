@@ -181,6 +181,15 @@ def test_page(request):
         content_type='image/png'
         )
     return response
+    
+@view_config(route_name='json')
+def test_page(request):
+    response = FileResponse(
+        './data.json',
+        request=request,
+        content_type='text/json'
+        )
+    return response
 
 
 def hashCheck(hash,threshold):
@@ -208,6 +217,7 @@ if __name__ == '__main__':
         config.add_route('top', r'/')
         config.add_view(over_view, route_name='top')
         config.add_route('png', '/home.png')
+        config.add_route('json', '/data.json')
         config.scan('__main__')
         app = config.make_wsgi_app()
     try:
