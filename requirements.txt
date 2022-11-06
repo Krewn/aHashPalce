@@ -1,3 +1,4 @@
 webcolors
 Pillow
 pyramid
+boto3

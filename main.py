@@ -3,6 +3,8 @@ from urllib import parse
 import webcolors
 from PIL import Image
 import os
+import boto3
+
 
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
@@ -21,6 +23,8 @@ def defaultAccess(spot,key,default=""):
     except KeyError as r:
         value = default
     return value
+
+
 
 class spot:
     def __init__(self,query_string):
@@ -84,13 +88,25 @@ class board:
     def __init__(self):
         self.data = []
         self.img = Image.new(mode="RGB", size=(board.size, board.size))
-        try:
-            with open("data.json","r") as f:
-                self.data = [[spot(q) for q in row] for row in json.load(f)]
+        useS3 = True
+        self.lastBackup = time.time()
+        self.s3 = boto3.resource(
+            service_name='s3',
+            region_name='us-east-2',
+            aws_access_key_id='AKIASZ3TBWPQKGFLUDWU',
+            aws_secret_access_key='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'
+        )
+        try:    
+            if useS3:
+                self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
+            else:
+                with open("data.json","r") as f:
+                    self.data = [[spot(q) for q in row] for row in json.load(f)]
             for x in range(board.size):
                 for y in range(board.size):
                     self.img.putpixel((x,y), processColor(self.data[x][y].color))
-        except (FileNotFoundError, json.decoder.JSONDecodeError):                
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            self.data = []
             for x in range(board.size):
                 row = []
                 for y in range(board.size):
@@ -99,14 +115,34 @@ class board:
                 self.data.append(row)
         self.lastSave = time.time()
         self.deltaCount = 0
-        self.upkeep(force=True)
         self.templates()
+        self.upkeep(force=True)
     def upkeep(self,force=False):
-        if force or (self.deltaCount >= 420 or (time.time()-self.lastSave > 69 and self.deltaCount)):
+        if force or (self.deltaCount >= 420 or (time.time()-self.lastSave > 900 and self.deltaCount)):
             self.saveImg()
             self.saveJson()
-            self.lastSave = time.time()
             self.deltaCount = 0
+            self.lastSave = time.time()
+            if force or time.time()-self.lastBackUp > 3600:
+                self.lastBackup = time.time()
+                self.dumpToS3()
+    def getDataFromS3(self):
+        return(json.loads(self.s3.Bucket('ahashplace').Object('data.json').get()["Body"].read()))
+    def dumpToS3(self):
+        result = []
+        s3data = self.getDataFromS3()
+        changes = 0
+        for i,(row1,row2) in enumerate(zip(self.data,s3data)):
+            row = []
+            for j, (v1,v2) in enumerate(zip(row1,row2)):
+                if hashCheck(v1.hash,hashlib.sha256(v2.encode()).hexdigest()):
+                    row.append(v1.query_string)
+                    changes += 1
+                else:
+                    row.append(v2)
+            result.append(row)
+        if changes:
+            self.s3.Bucket('ahashplace').Object('data.json').put(json.dumps(result).encode())
     def saveJson(self):
         with open("data.json","w") as f:
             json.dump([[q.query_string for q in row] for row in self.data],f)
