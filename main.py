@@ -142,7 +142,7 @@ class board:
                     row.append(v2)
             result.append(row)
         if changes:
-            self.s3.Bucket('ahashplace').Object('data.json').put(json.dumps(result).encode())
+            self.s3.Bucket('ahashplace').Object('data.json').put(Body=json.dumps(result).encode())
     def saveJson(self):
         with open("data.json","w") as f:
             json.dump([[q.query_string for q in row] for row in self.data],f)
