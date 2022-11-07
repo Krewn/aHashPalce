@@ -118,12 +118,12 @@ class board:
         self.templates()
         self.upkeep(force=True)
     def upkeep(self,force=False):
-        if force or (self.deltaCount >= 420 or (time.time()-self.lastSave > 900 and self.deltaCount)):
+        if force or (self.deltaCount >= 420 or (time.time()-self.lastSave > 69 and self.deltaCount)):
             self.saveImg()
             self.saveJson()
             self.deltaCount = 0
             self.lastSave = time.time()
-            if force or time.time()-self.lastBackUp > 3600:
+            if force or time.time()-self.lastBackup > 3600:
                 self.lastBackup = time.time()
                 self.dumpToS3()
     def getDataFromS3(self):
