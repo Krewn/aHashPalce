@@ -88,7 +88,6 @@ class board:
     def __init__(self):
         self.data = []
         self.img = Image.new(mode="RGB", size=(board.size, board.size))
-        useS3 = True
         self.lastBackup = time.time()
         self.lastSave = time.time()
         self.deltaCount = 0
@@ -99,11 +98,10 @@ class board:
             aws_secret_access_key='FT9OejU1K/ANjynfnX8+6nTJmErFDFNutstjmUL0'
         )
         try:    
-            if useS3:
-                self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
-            else:
-                with open("data.json","r") as f:
-                    self.data = [[spot(q) for q in row] for row in json.load(f)]
+            with open("data.json","r") as f:
+                self.data = [[spot(q) for q in row] for row in json.load(f)]
+            self.dumpToS3(self)
+            self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
             for x in range(board.size):
                 for y in range(board.size):
                     self.img.putpixel((x,y), processColor(self.data[x][y].color))
