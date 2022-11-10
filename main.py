@@ -90,6 +90,8 @@ class board:
         self.img = Image.new(mode="RGB", size=(board.size, board.size))
         useS3 = True
         self.lastBackup = time.time()
+        self.lastSave = time.time()
+        self.deltaCount = 0
         self.s3 = boto3.resource(
             service_name='s3',
             region_name='us-east-2',
@@ -113,8 +115,6 @@ class board:
                     row.append(spot(f'x={x}&y={y}&color=tomato'))
                     self.img.putpixel((x,y), processColor('tomato'))
                 self.data.append(row)
-        self.lastSave = time.time()
-        self.deltaCount = 0
         self.templates()
         self.upkeep(force=True)
     def upkeep(self,force=False):
@@ -124,7 +124,6 @@ class board:
             self.deltaCount = 0
             self.lastSave = time.time()
             if force or time.time()-self.lastBackup > 3600:
-                self.lastBackup = time.time()
                 self.dumpToS3()
     def getDataFromS3(self):
         return(json.loads(self.s3.Bucket('ahashplace').Object('data.json').get()["Body"].read()))
@@ -143,6 +142,7 @@ class board:
             result.append(row)
         if changes:
             self.s3.Bucket('ahashplace').Object('data.json').put(Body=json.dumps(result).encode())
+            self.lastBackup = time.time()
     def saveJson(self):
         with open("data.json","w") as f:
             json.dump([[q.query_string for q in row] for row in self.data],f)
