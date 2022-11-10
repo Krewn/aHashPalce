@@ -100,7 +100,7 @@ class board:
         try:    
             with open("data.json","r") as f:
                 self.data = [[spot(q) for q in row] for row in json.load(f)]
-            self.dumpToS3(self)
+            self.dumpToS3()
             self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
             for x in range(board.size):
                 for y in range(board.size):
