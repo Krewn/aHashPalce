@@ -91,17 +91,13 @@ class board:
         self.lastBackup = time.time()
         self.lastSave = time.time()
         self.deltaCount = 0
-        self.s3 = boto3.resource(
-            service_name='s3',
-            region_name='us-east-2',
-            aws_access_key_id='AKIASZ3TBWPQKGFLUDWU',
-            aws_secret_access_key='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'
-        )
+        self.s3 = None
         try:    
             with open("data.json","r") as f:
                 self.data = [[spot(q) for q in row] for row in json.load(f)]
-            self.dumpToS3()
-            self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
+            if not self.s3 is None:
+                self.dumpToS3()
+                self.data = [[spot(q) for q in row] for row in self.getDataFromS3()]
             for x in range(board.size):
                 for y in range(board.size):
                     self.img.putpixel((x,y), processColor(self.data[x][y].color))
@@ -124,8 +120,12 @@ class board:
             if force or time.time()-self.lastBackup > 3600:
                 self.dumpToS3()
     def getDataFromS3(self):
+        if self.s3 is None:
+            return self.data
         return(json.loads(self.s3.Bucket('ahashplace').Object('data.json').get()["Body"].read()))
     def dumpToS3(self):
+        if self.s3 == None:
+            return
         result = []
         s3data = self.getDataFromS3()
         changes = 0
